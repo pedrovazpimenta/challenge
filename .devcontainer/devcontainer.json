@@ -1,0 +1,70 @@
+{
+    "name": "Challenge-API-PIPELINE",
+    "dockerComposeFile": [
+        "../docker-compose.yml",
+        "docker-compose.yml"
+    ],
+    "service": "model-api",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "njpwerner.autodocstring",
+                "ms-python.black-formatter",
+                "waderyan.gitblame",
+                "donjayamanne.githistory",
+                "GitHub.copilot",
+                "GitHub.copilot-chat",
+                "codezombiech.gitignore",
+                "eamodio.gitlens",
+                "ms-python.isort",
+                "ms-python.vscode-pylance",
+                "ms-python.python",
+                "ms-python.debugpy",
+                "ms-toolsai.jupyter",
+                "donjayamanne.python-environment-manager",
+                "ms-vscode.test-adapter-converter",
+                "hbenl.vscode-test-explorer",
+                "KevinRose.vsc-python-indent",
+                "magicstack.MagicPython",
+                "hashicorp.terraform"
+            ],
+            "settings": {
+                "files.autoSave": "onFocusChange",
+                "editor.formatOnSave": true,
+                "black-formatter.args": [
+                    "--line-length=79"
+                ],
+                "terminal.integrated.defaultProfile.linux": "bash",
+                "python.testing": {
+                    "cwd": "app/",
+                    "unittestArgs": [
+                        "-v",
+                        "-s",
+                        "./tests",
+                        "-p",
+                        "test_*.py"
+                    ],
+                    "pytestEnabled": false,
+                    "unittestEnabled": true
+                },
+                "launch": {
+                    "version": "0.2.0",
+                    "configurations": [
+                        {
+                            "name": "Python Debugger: Current File",
+                            "type": "debugpy",
+                            "request": "launch",
+                            "program": "${file}",
+                            "console": "integratedTerminal",
+                            "cwd": "/workspaces/google-sheet-addon-engine/app/"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

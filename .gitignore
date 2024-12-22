@@ -1,0 +1,11 @@
+*.csv
+*.log
+*.log.1
+.env
+mlflow.db
+mlruns
+wait-for-it.sh
+__pycache__
+*.pyc
+*.pyo
+data
