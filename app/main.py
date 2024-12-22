@@ -1,7 +1,9 @@
 import os
 import json
+from time import perf_counter
 import uvicorn
 from fastapi import HTTPException, status
+from fastapi.responses import JSONResponse
 from utils import get_hash, logger
 import numpy as np
 import classes
@@ -24,7 +26,7 @@ def health():
 
 
 @app.post("/train_fp_basic_model")
-def train_fp_basic_model(input: classes.FPTrainingInput):
+async def train_fp_basic_model(input: classes.FPTrainingInput):
     """
     Train a model to predict the price of a property given a set of
     features downloaded from the property_friends dataset in S3.
@@ -66,7 +68,7 @@ def train_fp_basic_model(input: classes.FPTrainingInput):
 
 
 @app.post("/inference_fp_basic_model")
-def inference_fp_basic_model(input: classes.FPInferenceInput):
+async def inference_fp_basic_model(input: classes.FPInferenceInput):
     """
     Load a model from S3 and make predictions on a dataset.
 
@@ -85,17 +87,24 @@ def inference_fp_basic_model(input: classes.FPInferenceInput):
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
+        starting_time = perf_counter()
         predictions = model_inference.pf_basic_model_inference(input, hashes)
+        ending_time = perf_counter()
         logger.info(
             const.INFERENCE_SUCCESS,
             run_hash=hashes[0],
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
-        type_check = type(predictions)
-        return {
-            "predictions": type_check,
-        }
+
+        return JSONResponse(
+            {
+                "model": input.fp_model_path,
+                "input_data": input.data_path,
+                "time": ending_time - starting_time,
+                "predictions": predictions,
+            }
+        )
     except Exception as e:
         logger.error(
             const.INFERENCE_ERROR + f": {str(e)}.",

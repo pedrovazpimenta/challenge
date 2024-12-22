@@ -5,6 +5,9 @@ from utils import logger, load_data, download_model_binary
 import classes
 import constants as const
 
+MODEL_NAME = ""
+MODEL = None
+
 
 def pf_basic_model_inference(
     input: classes.FPInferenceInput, hashes: tuple
@@ -27,19 +30,41 @@ def pf_basic_model_inference(
             service_name=const.SERVICE_NAME,
         )
 
-        # Load the model binary from S3
-        model_binary = download_model_binary(
-            input.s3_bucket, input.fp_model_path
-        )
-        model: Pipeline = pickle.loads(model_binary)
+        global MODEL_NAME
+        global MODEL
+
+        if MODEL_NAME != input.fp_model_path:
+            MODEL_NAME = input.fp_model_path
+            model_binary = download_model_binary(
+                input.s3_bucket, input.fp_model_path
+            )
+            MODEL = pickle.loads(model_binary)
+            logger.info(
+                "Model binary stored successfully",
+                run_hash=hashes[0],
+                execution_hash=hashes[1],
+                service_name=const.SERVICE_NAME,
+            )
+        else:
+            logger.info(
+                "Model binary already stored",
+                run_hash=hashes[0],
+                execution_hash=hashes[1],
+                service_name=const.SERVICE_NAME,
+            )
+
+        model: Pipeline = MODEL
+        message = {
+            "message": "Model loaded successfully",
+            "model name": input.fp_model_path,
+        }
         logger.info(
-            "Model loaded successfully",
+            message,
             run_hash=hashes[0],
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
 
-        # Load the data for inference
         data = load_data(input.s3_bucket, input.data_path)
 
         for col in ["type", "sector"]:
@@ -52,15 +77,12 @@ def pf_basic_model_inference(
             service_name=const.SERVICE_NAME,
         )
 
-        # Select relevant columns for inference
         relevant_cols = [
             col for col in data.columns if col not in ["id", "target"]
         ]
 
-        logger.info(f"Loaded model steps: {model.named_steps}")
         assert isinstance(model, Pipeline), "Loaded object is not a Pipeline."
-        # Perform predictions
-        predictions = model.predict(data[relevant_cols].head())
+        predictions = model.predict(data[relevant_cols])
 
         logger.info(
             "Inference completed successfully",
@@ -68,9 +90,6 @@ def pf_basic_model_inference(
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
-
-        logger.info(f"model list: {predictions.tolist()}")
-        logger.info(f"checked")
 
         return predictions.tolist()
 
