@@ -1,11 +1,13 @@
 import os
 import json
 import uvicorn
-from fastapi import HTTPException, status, Request
+from fastapi import HTTPException, status
 from utils import get_hash, logger
+import numpy as np
 import classes
 import constants as const
 import model_training
+import model_inference
 
 app = classes.App(title="System backend")
 
@@ -53,6 +55,50 @@ def train_fp_basic_model(input: classes.FPTrainingInput):
     except Exception as e:
         logger.error(
             const.TRAINING_ERROR + f": {str(e)}.",
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=json.dumps({"error": str(e)}),
+        )
+
+
+@app.post("/inference_fp_basic_model")
+def inference_fp_basic_model(input: classes.FPInferenceInput):
+    """
+    Load a model from S3 and make predictions on a dataset.
+
+    Args:
+        input (FPInferenceInput): the input parameters for the inference.
+
+    Returns:
+        dict: the predictions
+    """
+    run_hash = get_hash()
+    hashes = (run_hash, app.execution_hash)
+    try:
+        logger.info(
+            const.INFERENCE_STARTED,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        predictions = model_inference.pf_basic_model_inference(input, hashes)
+        logger.info(
+            const.INFERENCE_SUCCESS,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        type_check = type(predictions)
+        return {
+            "predictions": type_check,
+        }
+    except Exception as e:
+        logger.error(
+            const.INFERENCE_ERROR + f": {str(e)}.",
             run_hash=hashes[0],
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,

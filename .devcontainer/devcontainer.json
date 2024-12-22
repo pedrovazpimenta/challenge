@@ -60,7 +60,7 @@
                             "request": "launch",
                             "program": "${file}",
                             "console": "integratedTerminal",
-                            "cwd": "/workspaces/google-sheet-addon-engine/app/"
+                            "cwd": "/workspaces/${localWorkspaceFolderBasename}/app/"
                         }
                     ]
                 }

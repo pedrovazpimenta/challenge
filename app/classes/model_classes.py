@@ -16,3 +16,4 @@ class FPTrainingInput(BaseModel):
 class FPInferenceInput(BaseModel):
     fp_model_path: str
     data_path: str
+    s3_bucket: str = os.getenv("MLFLOW_S3_BUCKET_NAME")

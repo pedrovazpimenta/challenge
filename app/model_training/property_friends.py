@@ -14,6 +14,7 @@ from sklearn.ensemble import GradientBoostingRegressor
 from utils import logger, load_data, upload_model_binary, download_model_binary
 import pickle
 import classes
+import constants as const
 
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_TRACKING_URI")
 MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME")
@@ -33,6 +34,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             "Training the basic Property Friends model started",
             run_hash=hashes[0],
             execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
         ml_flow_run_name = f"property_friends_basic_model_{hashes[0]}"
 
@@ -46,6 +48,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             "MLflow run started successfully",
             run_hash=hashes[0],
             execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
 
         train, test = (
@@ -56,6 +59,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             "Data loaded successfully",
             run_hash=hashes[0],
             execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
         train_cols = [
             col for col in train.columns if col not in ["id", "target"]
@@ -95,6 +99,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             "Model trained successfully",
             run_hash=hashes[0],
             execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
         test_predictions = pipeline.predict(test[train_cols])
         test_target = test[target].values
@@ -125,6 +130,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             f"Model binary uploaded successfully, path: {model_path}",
             run_hash=hashes[0],
             execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
 
     except Exception as e:

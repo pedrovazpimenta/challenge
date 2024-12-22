@@ -1,6 +1,5 @@
 from logging import DEBUG, WARNING, CRITICAL, ERROR, INFO
 
-
 LOG_FILE_PATH: str = "logs/executions.log"
 APP_STARTED: str = "Application started"
 APP_SHUTDOWN: str = "Application shutdown"
@@ -17,3 +16,6 @@ SERVICE_NAME: str = "Model API"
 TRAINING_STARTED: str = "Training started"
 TRAINING_SUCCESS: str = "Training success"
 TRAINING_ERROR: str = "Training error"
+INFERENCE_STARTED: str = "Inference started"
+INFERENCE_SUCCESS: str = "Inference success"
+INFERENCE_ERROR: str = "Inference error"
