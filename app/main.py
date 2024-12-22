@@ -5,6 +5,7 @@ from fastapi import HTTPException, status, Request
 from utils import get_hash, logger
 import classes
 import constants as const
+import model_training
 
 app = classes.App(title="System backend")
 
@@ -18,6 +19,48 @@ def health():
         service_name=const.SERVICE_NAME,
     )
     return {"status": "ok"}
+
+
+@app.post("/train_fp_basic_model")
+def train_fp_basic_model(input: classes.FPTrainingInput):
+    """
+    Train a model to predict the price of a property given a set of
+    features downloaded from the property_friends dataset in S3.
+
+    Args:
+        input (FPTrainingInput): the input parameters for the training.
+
+    Returns:
+        dict: the status of the training
+    """
+    run_hash = get_hash()
+    hashes = (run_hash, app.execution_hash)
+    try:
+        logger.info(
+            const.TRAINING_STARTED,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        model_training.pf_basic_model_training(input, hashes)
+        logger.info(
+            const.TRAINING_SUCCESS,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        return {"status": "success"}
+    except Exception as e:
+        logger.error(
+            const.TRAINING_ERROR + f": {str(e)}.",
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=json.dumps({"error": str(e)}),
+        )
 
 
 if __name__ == "__main__":

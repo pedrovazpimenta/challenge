@@ -14,3 +14,6 @@ LOG_TYPE: dict = {
 }
 FORMAT: str = "%(levelprefix)s [%(threadName)s] [%(name)s] %(message)s"
 SERVICE_NAME: str = "Model API"
+TRAINING_STARTED: str = "Training started"
+TRAINING_SUCCESS: str = "Training success"
+TRAINING_ERROR: str = "Training error"
