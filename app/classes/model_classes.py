@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -28,6 +29,7 @@ class InputColumns(BaseModel):
     n_bathroom: float
     latitude: float
     longitude: float
+    price: Optional[float]
 
 
 class FPSingleInferenceInput(BaseModel):

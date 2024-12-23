@@ -97,3 +97,5 @@ The project is a simple implementation of the requirements. Some improvements ca
 - Better model training in general: automated model selection, hyperparameter tuning, feature engineering, etc.
 - Using a real database for the users and their credentials.
 - A function to renew the access token automatically.
+
+As a final remark, there is a structure for future connection directly with the client's database, as required. One can use the `app/utils/db_connection.py` module to connect to the database and use the function to retrieve the data to make a prediction and then store the result into the `price` column. It was made this way as it would be very easy to reuse the model inference functions and create a new endpoint to trigger the process. The same can be made for the training process, but it would require a bit more work to make it work properly.
