@@ -2,7 +2,21 @@
 
 ## Local setup and usage
 
-The Project can be setup either using DevContainer or simple Docker setup. The DevContainer is recommended as it has all the necessary dependencies and configurations, but requires Visual Studio Code and DevContainer Extension installed, together with Docker. The Docker setup is more manual and requires the user to have Docker installed. The first one is simple and only requires the user to open the project in Visual Studio Code and click on the "Reopen in Container" button. The second one requires the user to run the following commands:
+The Project can be setup either using DevContainer or a simple Docker setup. The DevContainer is recommended as it has all the necessary dependencies and configurations, but requires Visual Studio Code and DevContainer Extension installed, together with Docker. The Docker setup is more manual and requires the user to have Docker installed.
+
+Please note that the user needs to set up the `.env` file in the root folter following the template in `.env.template`. The only requirement is that the value in `SECRET_KEY` should be a `HEX32` string. The user can generate one using the following command:
+
+```bash
+openssl rand -hex 32
+```
+
+ Then, the first setup is simple and only requires the user to open the project in Visual Studio Code and click on the "Reopen in Container" button. After that, typing the following command in the terminal:
+
+```bash
+uvicorn main:app --host=0.0.0.0 --port=8000 --log-config=log_conf.yaml
+```
+ 
+The second setup only requires the user to run the following command:
 
 ```bash
 docker-compode up
@@ -14,14 +28,14 @@ This will setup the following containers:
 - mlflow_db: a MySQL server for MLFlow
 - s3: a MinIO server for S3 storage (only for development)
 
-After that, the user needs to upload the datasets to the S3 bucket. The bucket name is "mlflow" and the datasets should be uploaded to the "dataset" folder. The datasets should be in CSV format and have the following columns:
+After that, the user needs to upload the datasets to the S3. This can be done in the address `http://localhost:9001/`, the bucket name is `mlflow` and the datasets should be uploaded to the `dataset` folder. The datasets should be in `CSV` format and have the following columns:
 
 ```python
 ['type', 'sector', 'net_usable_area', 'net_area', 'n_rooms',
        'n_bathroom', 'latitude', 'longitude', 'price']
 ```
 
-With that done, the user can access the FastAPI server at http://localhost:8000/docs (together with a detailed documentation) and the MLFlow server at http://localhost:5000.
+With that done, the user can access the FastAPI server at `http://localhost:8000/docs` (together with a detailed documentation of the endpoints) and the MLFlow server at `http://localhost:5000`.
 The first step is to get a token from the FastAPI server. This token is necessary to access any of the API's endpoint. To get the token, use the following endpoint:
 
 ```json
@@ -90,12 +104,12 @@ Finally, the user has the possibility of doing a single inference using the endp
 
 The project is a simple implementation of the requirements. Some improvements can be made, such as:
 - A CI/CD pipeline to automate the deployment process.
-- Connecting the logger with a database and monitoring system.
-- Unittests for the FastAPI server.
+- Connecting the logger with a database and monitoring system (for example, OpenSearch or BigQuery).
+- Unittests for the FastAPI server (triggered in the CI/CD pipeline with coverage check).
 - Automated checks for linting, code quality and security (can be done with the CI/CD pipeline).
 - Terraform scripts (or other IaC) for the infrastructure setup.
 - Better model training in general: automated model selection, hyperparameter tuning, feature engineering, etc.
-- Using a real database for the users and their credentials.
-- A function to renew the access token automatically.
+- Using a real database for the users and their credentials, and a function to renew the access token automatically, or;
+- Instead of in app authentication, in the deploy to the cloud, use a restricted VPC and a VPN to access the API, running it in a private subnet in isolation and leaving the authentication to the cloud provider if necessary, reducing the attack surface and application overhead, as we want to provide inferences as fast as possible.
 
 As a final remark, there is a structure for future connection directly with the client's database, as required. One can use the `app/utils/db_connection.py` module to connect to the database and use its functions to retrieve the data and make a batch prediction and then store the result into the `price` column. It was made this way as it would be very easy to reuse the model inference functions and create a new endpoint to trigger the process. The same can be made for the training process, as a similar function can be written to retrieve the data from the database, split and train the model. The only thing that needs to be done is to create a new endpoint in the FastAPI server to trigger the process.
