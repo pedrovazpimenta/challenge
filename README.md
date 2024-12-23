@@ -218,7 +218,7 @@ Getting the following response:
 
 The project is a simple implementation of the requirements. Some improvements can be made, such as:
 - A CI/CD pipeline to automate the deployment process.
-- Connecting the logger with a database and monitoring system (for example, OpenSearch or BigQuery).
+- Connecting the logger with a database and monitoring system (for example, OpenSearch or BigQuery), as well as logging more information.
 - Unittests for the FastAPI server (triggered in the CI/CD pipeline with coverage check).
 - Automated checks for linting, code quality and security (can be done with the CI/CD pipeline).
 - Terraform scripts (or other IaC) for the infrastructure setup.
