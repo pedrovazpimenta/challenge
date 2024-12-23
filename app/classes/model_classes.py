@@ -29,7 +29,7 @@ class InputColumns(BaseModel):
     n_bathroom: float
     latitude: float
     longitude: float
-    price: Optional[float]
+    price: Optional[float] = 0.0
 
 
 class FPSingleInferenceInput(BaseModel):

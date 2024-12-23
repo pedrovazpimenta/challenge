@@ -36,7 +36,7 @@ The token will be returned in the response body and can be used, together with t
 ```json
 {
   "username": "johndoe",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzM0OTIxMDAxfQ.IyRSmEr8XvV4Mij2lXuueqdILWLmIhFzIoWYh46wtdo"
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqb2huZG9lIiwiZXhwIjoxNzM0OTI0NDIzfQ.z3ZbuQEbYQV-UK7QST0MKssgZlYJXZB4tNQymWkTow4"
 } 
 
 ```
