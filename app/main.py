@@ -84,7 +84,9 @@ async def read_own_items(
 @app.post("/train_fp_basic_model")
 async def train_fp_basic_model(
     input: classes.FPTrainingInput,
-    token: Annotated[str, Depends(utils.verify_generated_token)],
+    authentication=Annotated[
+        classes.Authentication, Depends(utils.verify_generated_token)
+    ],
 ):
     """
     Train a model to predict the price of a property given a set of
@@ -126,13 +128,73 @@ async def train_fp_basic_model(
         )
 
 
-@app.post("/inference_fp_basic_model")
+@app.post("/batch_inference_fp_basic_model")
 async def inference_fp_basic_model(
-    input: classes.FPInferenceInput,
-    token: Annotated[str, Depends(utils.verify_generated_token)],
+    input: classes.FPBatchInferenceInput,
+    authentication=Annotated[
+        classes.Authentication, Depends(utils.verify_generated_token)
+    ],
 ):
     """
-    Load a model from S3 and make predictions on a dataset.
+    Load a model from S3 and make predictions on a dataset also from S3.
+
+    Args:
+        input (FPInferenceInput): the input parameters for the inference.
+
+    Returns:
+        dict: the predictions
+    """
+    run_hash = get_hash()
+    hashes = (run_hash, app.execution_hash)
+    try:
+        logger.info(
+            const.INFERENCE_STARTED,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        starting_time = perf_counter()
+        predictions = model_inference.pf_basic_model_batch_inference(
+            input, hashes
+        )
+        ending_time = perf_counter()
+        logger.info(
+            const.INFERENCE_SUCCESS,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+
+        return JSONResponse(
+            {
+                "model": input.fp_model_path,
+                "input_data": input.data_path,
+                "time": ending_time - starting_time,
+                "predictions": predictions,
+            }
+        )
+    except Exception as e:
+        logger.error(
+            const.INFERENCE_ERROR + f": {str(e)}.",
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=json.dumps({"error": str(e)}),
+        )
+
+
+@app.post("/single_inference_fp_basic_model")
+async def inference_fp_basic_model(
+    input: classes.FPSingleInferenceInput,
+    authentication=Annotated[
+        classes.Authentication, Depends(utils.verify_generated_token)
+    ],
+):
+    """
+    Load a model from S3 and make predictions on a single datapoint.
 
     Args:
         input (FPInferenceInput): the input parameters for the inference.
@@ -162,9 +224,9 @@ async def inference_fp_basic_model(
         return JSONResponse(
             {
                 "model": input.fp_model_path,
-                "input_data": input.data_path,
+                "input_data": input.input.model_dump(),
                 "time": ending_time - starting_time,
-                "predictions": predictions,
+                "prediction": predictions[0],
             }
         )
     except Exception as e:

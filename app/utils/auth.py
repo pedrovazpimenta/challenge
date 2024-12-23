@@ -87,9 +87,11 @@ async def get_current_active_user(
     return current_user
 
 
-def verify_generated_token(token: str, username: str):
+def verify_generated_token(authentication: classes.Authentication):
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            authentication, SECRET_KEY, algorithms=[ALGORITHM]
+        )
         username: str = payload.get("sub")
         expired = datetime.fromtimestamp(payload.get("exp")) < datetime.now()
         if username is None:

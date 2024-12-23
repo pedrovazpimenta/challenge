@@ -13,7 +13,24 @@ class FPTrainingInput(BaseModel):
     loss: str = "absolute_error"
 
 
-class FPInferenceInput(BaseModel):
+class FPBatchInferenceInput(BaseModel):
     fp_model_path: str
     data_path: str
+    s3_bucket: str = os.getenv("MLFLOW_S3_BUCKET_NAME")
+
+
+class InputColumns(BaseModel):
+    type: str
+    sector: str
+    net_usable_area: float
+    net_area: float
+    n_rooms: float
+    n_bathroom: float
+    latitude: float
+    longitude: float
+
+
+class FPSingleInferenceInput(BaseModel):
+    fp_model_path: str
+    input: InputColumns
     s3_bucket: str = os.getenv("MLFLOW_S3_BUCKET_NAME")
