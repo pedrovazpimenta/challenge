@@ -132,6 +132,7 @@ def pf_basic_model_training(input: classes.FPTrainingInput, hashes: tuple):
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
+        return model_path
 
     except Exception as e:
         logger.error(

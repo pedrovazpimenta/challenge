@@ -7,7 +7,13 @@ import uvicorn
 from fastapi import HTTPException, status, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
-from utils import get_hash, logger, fake_users_db, verify_generated_token
+from utils import (
+    get_hash,
+    logger,
+    fake_users_db,
+    verify_generated_token,
+    oauth2_scheme,
+)
 import classes
 import utils
 import constants as const
@@ -63,30 +69,10 @@ async def login_for_access_token(
         )
 
 
-@app.get("/users/me/", response_model=classes.User)
-async def read_users_me(
-    current_user: Annotated[
-        classes.User, Depends(utils.get_current_active_user)
-    ],
-):
-    return current_user
-
-
-@app.get("/users/me/items/")
-async def read_own_items(
-    current_user: Annotated[
-        classes.User, Depends(utils.get_current_active_user)
-    ],
-):
-    return [{"item_id": "Foo", "owner": current_user.username}]
-
-
 @app.post("/train_fp_basic_model")
 async def train_fp_basic_model(
     input: classes.FPTrainingInput,
-    authentication=Annotated[
-        classes.Authentication, Depends(utils.verify_generated_token)
-    ],
+    token=Annotated[str, Annotated[str, Depends(oauth2_scheme)]],
 ):
     """
     Train a model to predict the price of a property given a set of
@@ -98,7 +84,7 @@ async def train_fp_basic_model(
     Returns:
         dict: the status of the training
     """
-    if not verify_generated_token(authentication):
+    if not await verify_generated_token(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -113,14 +99,14 @@ async def train_fp_basic_model(
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
-        model_training.pf_basic_model_training(input, hashes)
+        model = model_training.pf_basic_model_training(input, hashes)
         logger.info(
             const.TRAINING_SUCCESS,
             run_hash=hashes[0],
             execution_hash=hashes[1],
             service_name=const.SERVICE_NAME,
         )
-        return {"status": "success"}
+        return {"status": "success", "model": f"{model}"}
     except Exception as e:
         logger.error(
             const.TRAINING_ERROR + f": {str(e)}.",
@@ -137,9 +123,7 @@ async def train_fp_basic_model(
 @app.post("/batch_inference_fp_basic_model")
 async def inference_fp_basic_model(
     input: classes.FPBatchInferenceInput,
-    authentication=Annotated[
-        classes.Authentication, Depends(utils.verify_generated_token)
-    ],
+    token=Annotated[str, Annotated[str, Depends(oauth2_scheme)]],
 ):
     """
     Load a model from S3 and make predictions on a dataset also from S3.
@@ -150,7 +134,7 @@ async def inference_fp_basic_model(
     Returns:
         dict: the predictions
     """
-    if not verify_generated_token(authentication):
+    if not await verify_generated_token(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -201,9 +185,7 @@ async def inference_fp_basic_model(
 @app.post("/single_inference_fp_basic_model")
 async def inference_fp_basic_model(
     input: classes.FPSingleInferenceInput,
-    authentication=Annotated[
-        classes.Authentication, Depends(utils.verify_generated_token)
-    ],
+    token=Annotated[str, Annotated[str, Depends(oauth2_scheme)]],
 ):
     """
     Load a model from S3 and make predictions on a single datapoint.
@@ -214,7 +196,7 @@ async def inference_fp_basic_model(
     Returns:
         dict: the predictions
     """
-    if not verify_generated_token(authentication):
+    if not await verify_generated_token(token):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
