@@ -19,7 +19,7 @@ uvicorn main:app --host=0.0.0.0 --port=8000 --log-config=log_conf.yaml
 The second setup only requires the user to run the following command:
 
 ```bash
-docker-compode up
+docker-compose up
 ```
 
 This will setup the following containers:
