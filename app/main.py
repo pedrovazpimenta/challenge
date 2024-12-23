@@ -1,21 +1,24 @@
 import os
 import json
 from time import perf_counter
+from datetime import timedelta
+from typing import Annotated
 import uvicorn
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from fastapi.responses import JSONResponse
-from utils import get_hash, logger
-import numpy as np
+from fastapi.security import OAuth2PasswordRequestForm
+from utils import get_hash, logger, fake_users_db, verify_generated_token
 import classes
+import utils
 import constants as const
 import model_training
 import model_inference
 
-app = classes.App(title="System backend")
+app = classes.App(title="Model API", version="0.1.0")
 
 
 @app.get("/health")
-def health():
+async def health():
     logger.info(
         const.HEALTH_CHECK_SUCCESS,
         run_hash=get_hash(),
@@ -25,8 +28,64 @@ def health():
     return {"status": "ok"}
 
 
+@app.post("/token")
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+) -> classes.Token:
+    try:
+        user = utils.authenticate_user(
+            fake_users_db, form_data.username, form_data.password
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect username or password",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        access_token_expires = timedelta(
+            minutes=const.ACCESS_TOKEN_EXPIRE_MINUTES
+        )
+        access_token = utils.create_access_token(
+            data={"sub": user.username}, expires_delta=access_token_expires
+        )
+        return classes.Token(access_token=access_token, token_type="bearer")
+    except Exception as e:
+        logger.error(
+            const.LOGIN_ERROR + f": {str(e)}.",
+            run_hash=get_hash(),
+            execution_hash=app.execution_hash,
+            service_name=const.SERVICE_NAME,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=json.dumps({"error": str(e)}),
+        )
+
+
+@app.get("/users/me/", response_model=classes.User)
+async def read_users_me(
+    current_user: Annotated[
+        classes.User, Depends(utils.get_current_active_user)
+    ],
+):
+    return current_user
+
+
+@app.get("/users/me/items/")
+async def read_own_items(
+    current_user: Annotated[
+        classes.User, Depends(utils.get_current_active_user)
+    ],
+):
+    return [{"item_id": "Foo", "owner": current_user.username}]
+
+
 @app.post("/train_fp_basic_model")
-async def train_fp_basic_model(input: classes.FPTrainingInput):
+async def train_fp_basic_model(
+    input: classes.FPTrainingInput,
+    token: Annotated[str, Depends(utils.verify_generated_token)],
+):
     """
     Train a model to predict the price of a property given a set of
     features downloaded from the property_friends dataset in S3.
@@ -68,7 +127,10 @@ async def train_fp_basic_model(input: classes.FPTrainingInput):
 
 
 @app.post("/inference_fp_basic_model")
-async def inference_fp_basic_model(input: classes.FPInferenceInput):
+async def inference_fp_basic_model(
+    input: classes.FPInferenceInput,
+    token: Annotated[str, Depends(utils.verify_generated_token)],
+):
     """
     Load a model from S3 and make predictions on a dataset.
 

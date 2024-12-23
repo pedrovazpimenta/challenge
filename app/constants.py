@@ -19,3 +19,5 @@ TRAINING_ERROR: str = "Training error"
 INFERENCE_STARTED: str = "Inference started"
 INFERENCE_SUCCESS: str = "Inference success"
 INFERENCE_ERROR: str = "Inference error"
+ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+LOGIN_ERROR: str = "Login error"
