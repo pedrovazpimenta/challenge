@@ -1,6 +1,6 @@
 # Challenge resolution: Backend API for inference and model training
 
-## Setup
+## Local setup and usage
 
 The Project can be setup either using DevContainer or simple Docker setup. The DevContainer is recommended as it has all the necessary dependencies and configurations, but requires Visual Studio Code and DevContainer Extension installed, together with Docker. The Docker setup is more manual and requires the user to have Docker installed. The first one is simple and only requires the user to open the project in Visual Studio Code and click on the "Reopen in Container" button. The second one requires the user to run the following commands:
 
@@ -85,3 +85,15 @@ Finally, the user has the possibility of doing a single inference using the endp
   }
 }
 ```
+
+## Further remarks and improvements
+
+The project is a simple implementation of the requirements. Some improvements can be made, such as:
+- A CI/CD pipeline to automate the deployment process.
+- Connecting the logger with a database and monitoring system.
+- Unittests for the FastAPI server.
+- Automated checks for linting, code quality and security (can be done with the CI/CD pipeline).
+- Terraform scripts (or other IaC) for the infrastructure setup.
+- Better model training in general: automated model selection, hyperparameter tuning, feature engineering, etc.
+- Using a real database for the users and their credentials.
+- A function to renew the access token automatically.

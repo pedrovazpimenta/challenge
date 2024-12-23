@@ -9,7 +9,16 @@ MLFLOW_S3_ENDPOINT_URL = os.getenv("MLFLOW_S3_ENDPOINT_URL")
 
 
 @contextmanager
-def get_aws_s3_client():
+def get_aws_s3_client() -> boto3.client:
+    """
+    Gets an S3 client and closes it after use.
+
+    Raises:
+        e: an exception
+
+    Yields:
+        boto3.client: the S3 client
+    """
     try:
         s3 = boto3.client(
             "s3",

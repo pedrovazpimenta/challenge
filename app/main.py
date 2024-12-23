@@ -221,14 +221,20 @@ async def inference_fp_basic_model(
             service_name=const.SERVICE_NAME,
         )
 
-        return JSONResponse(
-            {
-                "model": input.fp_model_path,
-                "input_data": input.input.model_dump(),
-                "time": ending_time - starting_time,
-                "prediction": predictions[0],
-            }
+        message = {
+            "model": input.fp_model_path,
+            "input_data": input.input.model_dump(),
+            "time": ending_time - starting_time,
+            "prediction": predictions[0],
+        }
+        logger.info(
+            message,
+            run_hash=hashes[0],
+            execution_hash=hashes[1],
+            service_name=const.SERVICE_NAME,
         )
+
+        return JSONResponse(message)
     except Exception as e:
         logger.error(
             const.INFERENCE_ERROR + f": {str(e)}.",
