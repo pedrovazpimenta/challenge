@@ -98,6 +98,12 @@ async def train_fp_basic_model(
     Returns:
         dict: the status of the training
     """
+    if not verify_generated_token(authentication):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     run_hash = get_hash()
     hashes = (run_hash, app.execution_hash)
     try:
@@ -144,6 +150,12 @@ async def inference_fp_basic_model(
     Returns:
         dict: the predictions
     """
+    if not verify_generated_token(authentication):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     run_hash = get_hash()
     hashes = (run_hash, app.execution_hash)
     try:
@@ -202,6 +214,12 @@ async def inference_fp_basic_model(
     Returns:
         dict: the predictions
     """
+    if not verify_generated_token(authentication):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
     run_hash = get_hash()
     hashes = (run_hash, app.execution_hash)
     try:
